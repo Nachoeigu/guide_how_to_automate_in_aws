@@ -126,6 +126,13 @@ Then, yes. It is time to push it and save it in ECR. You push the image recently
 docker push <account-id>.dkr.ecr.<your-region>.amazonaws.com/<your_docker_repo_name_in_aws>:<tag_of_the_image_we_want_to_run>
 ```
 
+# Here you can take two steps:
+- [Create the pipeline with AWS Fargate](#AWS-Fargate)
+- [Create the pipeline with AWS Lambda Function](#AWS-lambda)
+
+<a id="AWS-Fargate"></a>
+# AWS Fargate route
+
 ## Create secrets in AWS Secret Manager (in case you have to handle enviroment variables)
 The AWS Secret Manager works like your .env file. You store your private keys or access tokens.
 You can create one with the following command. In this example, in order to create a telegram_token.
@@ -302,9 +309,38 @@ We should set a rule in order to execute the lambda function based on a time log
 
 - You can select over **cron() or rate()** logic in order to set in which time you want to execute the lambda function.
 
+<a id="AWS-lambda"></a>
+# Lambda Function
+
+## Setting the Lambda Function for Container Images
+This way is easier. Basically, we can call the image with a lambda function and execute the image with the custom settings we want.
+Steps:
+- First, go to AWS Lambda service.
+- Create a function type "Container Image"
+- Define the name of your function, its runtime (Python in this case)
+- The architecture, by default, keep x86_64
+
+## Give the necessary permissions the function needs to run
+The role that executes the function should have permissions for entry in ECR (where we store the Docker image) and CloudWatch Log access. 
+
+For example, **AmazonEC2ContainerRegistryFullAccess** and **CloudWatchLogsFullAccess**.
+
+## (If needed) Set enviroment variables
+Inside the function, go to Configuration < Enviroment Variables and add your desired key/value pairs.
+
+## Test your function.
+You have the Test section, where you can run your image and see how it works.
+
+## Generate triggers (for automation)
+Finally, if you want to automate the image, you should add a triger. Inside the function, you will find the "Add trigger" option.
+
+With that, you can set a rule to activate the function, for example, everyday each 3 hours. *I recommend to use EventBridge (CloudWatch Events)*
+
+
 ## Done
 
-You scheduled your lambda function and it is ready for run when your applied rule achieves its condition.
+You scheduled your lambda function or AWS Fargate and it is ready for run when your applied rule achieves its condition.
 
-You will be able to see the logs of the lambda function in **AWS CloudWatch**, in the log group of the lambda function.
+You will be able to see the logs of the lambda function or AWS Fargate in **AWS CloudWatch**, in the log group of the lambda function.
+
 
