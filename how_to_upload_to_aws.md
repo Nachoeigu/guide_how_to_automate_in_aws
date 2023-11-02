@@ -71,6 +71,7 @@ docker rmi <your_docker_image>:latest
 docker ps -l #You see the containers
 docker rm <the_container_id_where_the_image_ran> #We remove the used container
 ```
+<a id="build-push-in-aws"></a>
 Finally we are ready to build the final Docker image with the following command:
 ```
 docker build --platform linux/amd64 -t <desired_docker_image_name>:latest .
@@ -312,8 +313,68 @@ We should set a rule in order to execute the lambda function based on a time log
 <a id="AWS-lambda"></a>
 # Lambda Function
 
+## Add lambda handler in your project
+In this case, we need to come back some steps because we need to adjust a little bit our directory.
+
+We have to add a handler so Lambda can execute that handler and make all its logics.
+
+So, you create in your root directory, this file called "lambda_function.py"
+```
+from <your_developed_module> import <your_main_function>
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def handler(event, context):
+    <your_developed_function_that_executes_your_entire_process>
+```
+
+## Adjust Dockerfile for Lambda
+Then we need to adjust the Dockerfile so Lambda can handle it propertly. Here an example:
+```
+#We have to use a python image from AWS
+FROM public.ecr.aws/lambda/python:3.8
+
+# We should place this special argument for the runtime of lambda API
+COPY . ${LAMBDA_TASK_ROOT}
+
+RUN pip install --upgrade pip
+
+RUN pip install -r requirements.txt
+
+# Define environment variable
+ENV chat_id -693888464
+ENV origin_city ''
+ENV destination_city ''
+ENV n_adults ''
+ENV n_children ''
+ENV first_date ''
+ENV last_date ''
+ENV min_nights ''
+ENV max_nights ''
+ENV max_stops ''
+ENV limit_price ''
+ENV only_weekend ''
+ENV backup ''
+ENV multidestination ''
+ENV local_execution ''
+ENV stop_iterating_in_number ''
+
+#This are the secrets variables
+ENV telegram_bot ''
+ENV spreadsheet_id ''
+ENV spreadsheet_credentials ''
+
+#We call the file we created for AWS Lambda purposes.
+CMD ["lambda_function.handler"]
+```
+
+## Build, push and deploy your image in ECR
+[Like we did before](#build-push-in-aws), you should to build, push and deploy the image in ECR.
+
 ## Setting the Lambda Function for Container Images
-This way is easier. Basically, we can call the image with a lambda function and execute the image with the custom settings we want.
+Then, it is a easier way. Basically, we can call the image with a lambda function and execute the image with the custom settings we want.
 Steps:
 - First, go to AWS Lambda service.
 - Create a function type "Container Image"
