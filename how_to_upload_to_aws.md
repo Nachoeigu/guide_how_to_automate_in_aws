@@ -73,7 +73,7 @@ docker rm <the_container_id_where_the_image_ran> #We remove the used container
 ```
 Finally we are ready to build the final Docker image with the following command:
 ```
-docker build --platform: linux/amd64 -t <desired_docker_image_name>:latest .
+docker build --platform linux/amd64 -t <desired_docker_image_name>:latest .
 ```
 This is the reason we built again: we put the platform linux/amd64 because we will run the image in AWS Fargate, where has the host linux/amd64, and if we want to run the Docker image in our local host we will receive an error because the platform doesnt match.
 
